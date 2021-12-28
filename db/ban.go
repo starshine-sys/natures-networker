@@ -1,19 +1,22 @@
 package db
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"strings"
 	"time"
 
+	"emperror.dev/errors"
 	"github.com/diamondburned/arikawa/v3/discord"
+	"github.com/georgysavva/scany/pgxscan"
 	"github.com/starshine-sys/bcr"
 )
 
 type Ban struct {
 	ID        int64
 	MessageID *discord.MessageID
-	UserIDs   []uint64
+	UserIDs   []uint64 `db:"user_ids"`
 	Reason    string
 	Evidence  *string
 	CreatedAt time.Time
@@ -30,6 +33,9 @@ func (b Ban) Embed(ctx *bcr.Context) discord.Embed {
 		Color:       bcr.ColourRed,
 		Timestamp:   discord.NewTimestamp(b.CreatedAt),
 		Description: fmt.Sprintf("**User ID%v**\n", plural),
+		Footer: &discord.EmbedFooter{
+			Text: fmt.Sprintf("ID: %v", b.ID),
+		},
 	}
 
 	usernames := make([]string, 0, len(b.UserIDs))
@@ -64,4 +70,29 @@ func (b Ban) Embed(ctx *bcr.Context) discord.Embed {
 	}
 
 	return e
+}
+
+func (db *DB) CreateBan(users []*discord.User, reason string) (b Ban, err error) {
+	ids := make([]uint64, 0, len(users))
+	for _, u := range users {
+		ids = append(ids, uint64(u.ID))
+	}
+
+	err = pgxscan.Get(context.Background(), db, &b, "insert into bans (user_ids, reason) values ($1, $2) returning *", ids, reason)
+	return b, errors.Cause(err)
+}
+
+func (db *DB) SetBanMessage(id int64, msg discord.MessageID) error {
+	_, err := db.Exec(context.Background(), "update bans set message_id = $1 where id = $2", msg, id)
+	return err
+}
+
+func (db *DB) UpdateEvidence(id int64, evidence string) (b Ban, err error) {
+	err = pgxscan.Get(context.Background(), db, &b, "update bans set evidence = $1 where id = $2 returning *", evidence, id)
+	return b, errors.Cause(err)
+}
+
+func (db *DB) UpdateReason(id int64, reason string) (b Ban, err error) {
+	err = pgxscan.Get(context.Background(), db, &b, "update bans set reason = $1 where id = $2 returning *", reason, id)
+	return b, errors.Cause(err)
 }
