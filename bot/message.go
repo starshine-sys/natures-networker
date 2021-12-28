@@ -31,7 +31,7 @@ func (bot *Bot) messageCreate(m *gateway.MessageCreateEvent) {
 			common.Log.Warnf("HTTP error in command: %v", err)
 		default:
 			common.Log.Errorf("Error in command %v: %v", ctx.Command, err)
-			err = ctx.SendfX("Internal error occurred.")
+			err = ctx.SendfX("Internal error occurred.\n>>> ```\n%v\n```", err)
 			if err != nil {
 				common.Log.Warnf("HTTP error in command: %v", err)
 			}

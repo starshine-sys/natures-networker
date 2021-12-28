@@ -3,7 +3,9 @@ package bot
 import (
 	"sort"
 
+	"github.com/diamondburned/arikawa/v3/api"
 	"github.com/diamondburned/arikawa/v3/discord"
+	"github.com/diamondburned/arikawa/v3/gateway"
 	"github.com/starshine-sys/bcr"
 	"github.com/starshine-sys/bcr/bot"
 	"github.com/starshine-sys/natures-networker/common"
@@ -27,13 +29,16 @@ func New() (*Bot, error) {
 		return nil, err
 	}
 
-	bcrbot, err := bot.New(common.Conf.Token)
+	r, err := bcr.NewWithIntents(common.Conf.Token, []discord.UserID{common.Conf.Owner}, []string{common.Conf.Prefix}, bcr.RequiredIntents|gateway.IntentGuildBans|gateway.IntentGuildMembers|gateway.IntentGuildPresences)
 	if err != nil {
 		return nil, err
 	}
-	bcrbot.Prefix(common.Conf.Prefix)
-	bcrbot.Owner(common.Conf.Owner)
+
+	bcrbot := bot.NewWithRouter(r)
 	bcrbot.Router.EmbedColor = Colour
+	bcrbot.Router.DefaultMentions = &api.AllowedMentions{
+		Parse: []api.AllowedMentionType{},
+	}
 
 	bot := &Bot{Bot: bcrbot, DB: db, Colour: Colour}
 

@@ -10,6 +10,7 @@ import (
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/diamondburned/arikawa/v3/gateway"
 	"github.com/diamondburned/arikawa/v3/state"
+	"github.com/diamondburned/arikawa/v3/utils/ws"
 	"github.com/starshine-sys/natures-networker/ban"
 	"github.com/starshine-sys/natures-networker/bot"
 	"github.com/starshine-sys/natures-networker/common"
@@ -18,6 +19,8 @@ import (
 )
 
 func main() {
+	ws.WSDebug = common.Log.Debug
+
 	common.Log.Infof("Starting Nature's Networker version %v", common.Version)
 
 	bot, err := bot.New()

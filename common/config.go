@@ -12,6 +12,7 @@ type Config struct {
 
 	StaffRole  discord.RoleID `toml:"staff_role"`
 	HelperRole discord.RoleID `toml:"helper_role"`
+	RepRole    discord.RoleID `toml:"rep_role"`
 
 	ListingLog discord.ChannelID `toml:"listing_log"`
 	BanLog     discord.ChannelID `toml:"ban_log"`
